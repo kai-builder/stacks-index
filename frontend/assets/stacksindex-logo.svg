@@ -1,0 +1,20 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="20" cy="20" r="20" fill="#0D0D0D"/>
+  
+  <!-- Pie chart segments representing allocation -->
+  <!-- sBTC segment (40%) - Orange -->
+  <path d="M20 4 A16 16 0 0 1 35.6 14.4 L20 20 Z" fill="#F7931A"/>
+  
+  <!-- stSTX segment (40%) - Purple -->
+  <path d="M35.6 14.4 A16 16 0 0 1 14.4 35.6 L20 20 Z" fill="#9B59B6"/>
+  
+  <!-- STX segment (20%) - Blue -->
+  <path d="M14.4 35.6 A16 16 0 0 1 20 4 L20 20 Z" fill="#5546FF"/>
+  
+  <!-- Center circle -->
+  <circle cx="20" cy="20" r="6" fill="#0D0D0D"/>
+  
+  <!-- Index arrow/chart icon in center -->
+  <path d="M17 22 L20 18 L23 22" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
