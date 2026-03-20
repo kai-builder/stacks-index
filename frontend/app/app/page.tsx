@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowDownToLine, ArrowUpFromLine, Wallet, TrendingUp, TrendingDown, Activity, RefreshCw, DollarSign, BarChart3, Droplets, Minus } from 'lucide-react'
@@ -96,12 +96,6 @@ export default function DashboardPage() {
   // Track if initial fetch has been triggered
   const [hasInitialFetch, setHasInitialFetch] = useState(false)
 
-  const [portfolio, setPortfolio] = useState<{
-    totalValue: number
-    totalCost: number
-    holdings: { symbol: string; amount: number; value: number }[]
-  } | null>(null)
-
   // Fetch on-chain user stats
   const {
     formattedStats,
@@ -141,27 +135,37 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [setPrices, setLoading])
 
-  // Build portfolio from real on-chain balances
-  useEffect(() => {
+  const totalInvested = formattedStats?.totalInvested
+
+  // Portfolio is derived from balances/prices; memoize it instead of syncing derived state.
+  const portfolio = useMemo(() => {
     if (balances.length > 0 && Object.keys(prices).length > 0) {
-      const holdings = balances.map((token) => {
-        const price = prices[token.symbol]?.price || 0
-        return {
-          symbol: token.symbol,
-          amount: token.balance,
-          value: token.balance * price,
-        }
-      }).filter(h => h.value > 0)
+      const holdings = balances
+        .map((token) => {
+          const price = prices[token.symbol]?.price || 0
+          return {
+            symbol: token.symbol,
+            amount: token.balance,
+            value: token.balance * price,
+          }
+        })
+        .filter((holding) => holding.value > 0)
 
-      const totalValue = holdings.reduce((sum, h) => sum + h.value, 0)
-      // Use formattedStats for totalCost if available, otherwise estimate
-      const totalCost = formattedStats?.totalInvested || totalValue
+      const totalValue = holdings.reduce((sum, holding) => sum + holding.value, 0)
 
-      setPortfolio({ totalValue, totalCost, holdings })
-    } else if (balances.length === 0 && !isFetchingBalances && hasInitialFetch) {
-      setPortfolio(null)
+      return {
+        totalValue,
+        totalCost: totalInvested || totalValue,
+        holdings,
+      }
     }
-  }, [balances, prices, formattedStats, isFetchingBalances, hasInitialFetch])
+
+    if (balances.length === 0 && !isFetchingBalances && hasInitialFetch) {
+      return null
+    }
+
+    return null
+  }, [balances, prices, totalInvested, isFetchingBalances, hasInitialFetch])
 
   if (!isConnected) {
     return (
