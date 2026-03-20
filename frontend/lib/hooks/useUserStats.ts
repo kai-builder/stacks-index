@@ -6,7 +6,7 @@
  * - get-user-pnl: Returns { invested, withdrawn, profit, loss, is-profit }
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { fromMicroUnits } from '@/lib/stacks/contract'
 
 export interface UserStats {
@@ -80,23 +80,31 @@ export function useUserStats(address: string | null, network: 'mainnet' | 'testn
   }, [fetchStats])
 
   // Computed values in human-readable units (USDCx has 6 decimals)
-  const formattedStats = state.stats ? {
-    totalInvested: fromMicroUnits(state.stats.totalInvested),
-    totalWithdrawn: fromMicroUnits(state.stats.totalWithdrawn),
-    investCount: state.stats.investCount,
-    sellCount: state.stats.sellCount,
-  } : null
+  const formattedStats = useMemo(() => {
+    if (!state.stats) return null
 
-  const formattedPnL = state.pnl ? {
-    invested: fromMicroUnits(state.pnl.invested),
-    withdrawn: fromMicroUnits(state.pnl.withdrawn),
-    profit: fromMicroUnits(state.pnl.profit),
-    loss: fromMicroUnits(state.pnl.loss),
-    isProfit: state.pnl.isProfit,
-    profitPercent: state.pnl.invested > 0
-      ? ((state.pnl.withdrawn - state.pnl.invested) / state.pnl.invested) * 100
-      : 0,
-  } : null
+    return {
+      totalInvested: fromMicroUnits(state.stats.totalInvested),
+      totalWithdrawn: fromMicroUnits(state.stats.totalWithdrawn),
+      investCount: state.stats.investCount,
+      sellCount: state.stats.sellCount,
+    }
+  }, [state.stats])
+
+  const formattedPnL = useMemo(() => {
+    if (!state.pnl) return null
+
+    return {
+      invested: fromMicroUnits(state.pnl.invested),
+      withdrawn: fromMicroUnits(state.pnl.withdrawn),
+      profit: fromMicroUnits(state.pnl.profit),
+      loss: fromMicroUnits(state.pnl.loss),
+      isProfit: state.pnl.isProfit,
+      profitPercent: state.pnl.invested > 0
+        ? ((state.pnl.withdrawn - state.pnl.invested) / state.pnl.invested) * 100
+        : 0,
+    }
+  }, [state.pnl])
 
   return {
     ...state,
